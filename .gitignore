@@ -1,7 +1,11 @@
 # Data of users
-data/images/
-data/videos/
-data/results/
+**/user_data/
+
+# Additional files to ignore
+**/__pycache__/
+**/*.env
+**/3d.dat
+**/.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
