@@ -10,7 +10,7 @@ functions:
 """
 
 # Standard library imports
-from typing import List, Tuple
+from typing import Tuple
 import math
 
 # Third-party library imports

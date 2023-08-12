@@ -11,6 +11,7 @@ import math
 import pickle
 from typing import Dict, List, NamedTuple, Tuple
 import os
+import joblib
 
 # Third-party library imports
 # Import cv2 to activate video / camera input
@@ -33,7 +34,6 @@ import imageio
 from IPython.display import HTML, display
 
 # Import tensorflow modules
-import tensorflow as tf
 # from tensorflow import keras
 # from tensorflow.keras.models import load_model
 import tensorflow as tf
@@ -56,8 +56,8 @@ mpDraw = mp.solutions.drawing_utils
 points = mpPose.PoseLandmark
 
 # Extract the yoga pose classifier from the previous Colab notebook
-classifier_filename = 'models/Movenet_model_pretrained_Yoga82_model.sav'
-classifier = pickle.load(open(classifier_filename, 'rb'))
+classifier_filename = 'models/CNNModel.sav'
+classifier = joblib.load(open(classifier_filename, 'rb'))
 
 # Extract the movenet model
 # movenet_model_path = 'models/movenet_thunder'
@@ -220,11 +220,11 @@ if __name__ == '__main__':
     X, y, class_names, _ = load_pose_landmarks(csvs_out_train_path)
 
     # Initialize the file of target poses
-    ideal_features = pd.read_csv('data/target_pose/datasetFinalAngles2023-07-31.csv')
+    ideal_features = pd.read_csv('target_pose_data/datasetFinalAngles2023-07-31.csv')
 
     # Start the live recording or pre-recorded video of the student avatar
     # cap = cv2.VideoCapture(0)
-    cap = cv2.VideoCapture("data/videos/LennardDiagnosticUttanasana_Flipped.mp4")
+    cap = cv2.VideoCapture("user_data/videos/DownwardDogWrong.mp4")
 
     # If you have trouble opening it then give an error
     if (cap.isOpened() == False):
@@ -286,9 +286,22 @@ if __name__ == '__main__':
                     #print(student_asana)
 
                     # print the confidence of how confident you are about the identified asana of the student
+                    # get the confidence but need to reshape the student body angles list
+                    desired_length = 34
+
+                    if len(student_body_angles_list) < desired_length:
+                        # Pad the list with zeros to match desired length
+                        padded_input = student_body_angles_list + [0] * (desired_length - len(student_body_angles_list))
+                    else:
+                        # Truncate the list to desired length
+                        padded_input = student_body_angles_list[:desired_length]
+
+                    # Reshape the padded/truncated input to match the model's expected input shape
+                    reshaped_input = np.array(padded_input).reshape(1, -1)
+                    confidence = sorted(classifier.predict(reshaped_input)[0])[-1]
 
                     # confidence = sorted(classifier.predict_proba(np.array(student_body_angles).reshape(1, -1))[0])[-1]
-                    confidence = sorted(classifier.predict(np.array(student_body_angles_list).reshape(1, -1))[0])[-1]
+                    #confidence = sorted(classifier.predict(np.array(student_body_angles_list).reshape(1, -1))[0])[-1]
                     print("this is the confidence")
                     print(confidence)
 
